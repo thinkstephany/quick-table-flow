@@ -1,18 +1,20 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Mesa, MesaStatus } from '@/types';
 import { Users, Clock, DollarSign, Plus } from 'lucide-react';
+import MesaCadastroModal from './MesaCadastroModal';
 
 interface MesasViewProps {
   mesas: Mesa[];
   onMesaUpdate: (mesaId: number, updates: Partial<Mesa>) => void;
+  onMesaAdd: (mesa: Omit<Mesa, 'id'>) => void;
 }
 
-const MesasView = ({ mesas, onMesaUpdate }: MesasViewProps) => {
+const MesasView = ({ mesas, onMesaUpdate, onMesaAdd }: MesasViewProps) => {
   const [mesaSelecionada, setMesaSelecionada] = useState<Mesa | null>(null);
+  const [modalCadastroOpen, setModalCadastroOpen] = useState(false);
 
   const handleStatusChange = (mesa: Mesa, novoStatus: MesaStatus) => {
     const updates: Partial<Mesa> = { status: novoStatus };
@@ -58,7 +60,10 @@ const MesasView = ({ mesas, onMesaUpdate }: MesasViewProps) => {
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Mesas</h1>
           <p className="text-gray-600">Controle o status e ocupação das mesas</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button 
+          onClick={() => setModalCadastroOpen(true)}
+          className="bg-primary hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nova Mesa
         </Button>
@@ -193,6 +198,13 @@ const MesasView = ({ mesas, onMesaUpdate }: MesasViewProps) => {
           );
         })}
       </div>
+
+      <MesaCadastroModal
+        open={modalCadastroOpen}
+        onOpenChange={setModalCadastroOpen}
+        onMesaAdd={onMesaAdd}
+        mesas={mesas}
+      />
     </div>
   );
 };

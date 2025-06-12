@@ -47,3 +47,22 @@ export interface ItemEstoque {
   estoqueMinimo: number;
   preco: number;
 }
+
+export interface Funcionario {
+  id: number;
+  nome: string;
+  cargo: 'garcom' | 'cozinheiro' | 'gerente' | 'caixa';
+  telefone: string;
+  email: string;
+  ativo: boolean;
+  dataAdmissao: string;
+}
+
+export interface Turno {
+  id: number;
+  funcionarioId: number;
+  data: string;
+  horaInicio: string;
+  horaFim?: string;
+  status: 'ativo' | 'finalizado' | 'pausado';
+}

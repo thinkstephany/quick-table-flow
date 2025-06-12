@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Home, Users, ClipboardList, Package, BarChart3, Settings, Menu, X } from 'lucide-react';
+import { Home, Users, ClipboardList, Package, BarChart3, Settings, Menu, X, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LayoutProps {
@@ -18,6 +17,7 @@ const Layout = ({ children, activeView, onViewChange }: LayoutProps) => {
     { id: 'pedidos', label: 'Pedidos', icon: ClipboardList },
     { id: 'cardapio', label: 'Cardápio', icon: Package },
     { id: 'estoque', label: 'Estoque', icon: BarChart3 },
+    { id: 'funcionarios', label: 'Funcionários', icon: UserCheck },
     { id: 'configuracoes', label: 'Configurações', icon: Settings },
   ];
 
