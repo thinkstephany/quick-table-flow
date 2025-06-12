@@ -6,6 +6,8 @@ import CardapioView from '@/components/CardapioView';
 import EstoqueView from '@/components/EstoqueView';
 import FuncionariosView from '@/components/FuncionariosView';
 import { Mesa, Pedido, ItemCardapio, ItemEstoque, Funcionario, Turno } from '@/types';
+import PedidosView from '@/components/PedidosView';
+import ConfiguracoesView from '@/components/ConfiguracoesView';
 
 const Index = () => {
   const [activeView, setActiveView] = useState('dashboard');
@@ -27,7 +29,7 @@ const Index = () => {
   ]);
 
   // Pedidos mock
-  const [pedidos] = useState<Pedido[]>([
+  const [pedidos, setPedidos] = useState<Pedido[]>([
     {
       id: 1,
       mesaId: 2,
@@ -173,6 +175,13 @@ const Index = () => {
     }
   ]);
 
+  const handlePedidoUpdate = (pedidoId: number, status: Pedido['status']) => {
+    console.log(`Atualizando pedido ${pedidoId} para status ${status}`);
+    setPedidos(pedidos.map(pedido =>
+      pedido.id === pedidoId ? { ...pedido, status } : pedido
+    ));
+  };
+
   const handleMesaUpdate = (mesaId: number, updates: Partial<Mesa>) => {
     setMesas(mesas.map(mesa => 
       mesa.id === mesaId ? { ...mesa, ...updates } : mesa
@@ -224,6 +233,15 @@ const Index = () => {
         return <Dashboard mesas={mesas} pedidos={pedidos} />;
       case 'mesas':
         return <MesasView mesas={mesas} onMesaUpdate={handleMesaUpdate} onMesaAdd={handleMesaAdd} />;
+      case 'pedidos':
+        return (
+          <PedidosView 
+            pedidos={pedidos} 
+            mesas={mesas} 
+            cardapio={cardapio}
+            onPedidoUpdate={handlePedidoUpdate}
+          />
+        );
       case 'cardapio':
         return <CardapioView cardapio={cardapio} onItemUpdate={handleItemUpdate} />;
       case 'estoque':
@@ -238,20 +256,8 @@ const Index = () => {
             onTurnoEnd={handleTurnoEnd}
           />
         );
-      case 'pedidos':
-        return (
-          <div className="p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Pedidos</h1>
-            <p className="text-gray-600">Sistema de pedidos em desenvolvimento...</p>
-          </div>
-        );
       case 'configuracoes':
-        return (
-          <div className="p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Configurações</h1>
-            <p className="text-gray-600">Configurações do sistema em desenvolvimento...</p>
-          </div>
-        );
+        return <ConfiguracoesView />;
       default:
         return <Dashboard mesas={mesas} pedidos={pedidos} />;
     }
