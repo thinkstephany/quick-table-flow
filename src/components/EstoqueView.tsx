@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ItemEstoque } from '@/types';
-import { Plus, Package, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Package, AlertTriangle, Download, Upload } from 'lucide-react';
 import EstoqueCadastroModal from './EstoqueCadastroModal';
+import CSVImportModal from './CSVImportModal';
+import { exportToCSV } from '@/utils/csvUtils';
 
 interface EstoqueViewProps {
   estoque: ItemEstoque[];
@@ -14,9 +15,42 @@ interface EstoqueViewProps {
 
 const EstoqueView = ({ estoque, onItemAdd }: EstoqueViewProps) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const itensEmFalta = estoque.filter(item => item.quantidade <= item.estoqueMinimo);
   const valorTotalEstoque = estoque.reduce((total, item) => total + (item.quantidade * item.preco), 0);
+
+  const handleExportCSV = () => {
+    const exportData = estoque.map(item => ({
+      nome: item.nome,
+      categoria: item.categoria,
+      quantidade: item.quantidade,
+      unidade: item.unidade,
+      estoqueMinimo: item.estoqueMinimo,
+      preco: item.preco,
+      valorTotal: (item.quantidade * item.preco).toFixed(2)
+    }));
+
+    exportToCSV({
+      filename: `estoque_${new Date().toISOString().split('T')[0]}`,
+      data: exportData,
+      headers: ['nome', 'categoria', 'quantidade', 'unidade', 'estoqueMinimo', 'preco', 'valorTotal']
+    });
+  };
+
+  const handleImportCSV = (data: any[]) => {
+    data.forEach(row => {
+      const item = {
+        nome: row.nome || '',
+        categoria: row.categoria || 'Outros',
+        quantidade: parseFloat(row.quantidade) || 0,
+        unidade: row.unidade || 'un',
+        estoqueMinimo: parseFloat(row.estoqueMinimo) || 0,
+        preco: parseFloat(row.preco) || 0
+      };
+      onItemAdd(item);
+    });
+  };
 
   const getCategoriaColor = (categoria: string) => {
     const colors: { [key: string]: string } = {
@@ -41,10 +75,20 @@ const EstoqueView = ({ estoque, onItemAdd }: EstoqueViewProps) => {
           <h1 className="text-3xl font-bold text-gray-900">Controle de Estoque</h1>
           <p className="text-gray-600">Gerencie ingredientes e suprimentos</p>
         </div>
-        <Button onClick={() => setModalOpen(true)} className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Item
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV} disabled={estoque.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Importar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Item
+          </Button>
+        </div>
       </div>
 
       {/* Alertas de Estoque Baixo */}
@@ -167,6 +211,14 @@ const EstoqueView = ({ estoque, onItemAdd }: EstoqueViewProps) => {
         open={modalOpen}
         onOpenChange={setModalOpen}
         onItemAdd={onItemAdd}
+      />
+
+      <CSVImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImport={handleImportCSV}
+        title="Importar Estoque do CSV"
+        expectedHeaders={['nome', 'categoria', 'quantidade', 'unidade', 'estoqueMinimo', 'preco']}
       />
     </div>
   );

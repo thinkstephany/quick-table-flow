@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Pedido, Mesa, ItemCardapio } from '@/types';
-import { ClipboardList, Clock, CheckCircle, Eye, Plus, Search } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle, Eye, Plus, Search, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { exportToCSV } from '@/utils/csvUtils';
 import {
   Table,
   TableBody,
@@ -26,6 +26,26 @@ interface PedidosViewProps {
 const PedidosView = ({ pedidos, mesas, cardapio, onPedidoUpdate }: PedidosViewProps) => {
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [busca, setBusca] = useState('');
+
+  const handleExportCSV = () => {
+    const exportData = pedidosFiltrados.map(pedido => {
+      const mesa = mesas.find(m => m.id === pedido.mesaId);
+      return {
+        id: pedido.id,
+        mesa: mesa?.numero || 'N/A',
+        garcom: pedido.garcom,
+        horario: pedido.horario,
+        status: getStatusLabel(pedido.status),
+        total: pedido.total.toFixed(2)
+      };
+    });
+
+    exportToCSV({
+      filename: `pedidos_${new Date().toISOString().split('T')[0]}`,
+      data: exportData,
+      headers: ['id', 'mesa', 'garcom', 'horario', 'status', 'total']
+    });
+  };
 
   const getStatusColor = (status: Pedido['status']) => {
     switch (status) {
@@ -70,10 +90,16 @@ const PedidosView = ({ pedidos, mesas, cardapio, onPedidoUpdate }: PedidosViewPr
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Pedidos</h1>
           <p className="text-gray-600">Acompanhe e gerencie todos os pedidos do restaurante</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Pedido
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV} disabled={pedidosFiltrados.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Pedido
+          </Button>
+        </div>
       </div>
 
       {/* Resumo dos Status */}
